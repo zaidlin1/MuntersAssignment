@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Giphy Search</h1>
+
+    <form method="get">
+        <input type="text" name="searchTerm" value="@ViewBag.SearchTerm" />
+        <input type="submit" value="Search" />
+    </form>
+
+    @if (ViewBag.Gifs != null)
+    {
+        <h2>Results</h2>
+        <ul>
+            @foreach (var gif in ViewBag.Gifs)
+            {
+                <li><img src="@gif" /></li>
+            }
+            }
+        </ul>
+    }
+</div>

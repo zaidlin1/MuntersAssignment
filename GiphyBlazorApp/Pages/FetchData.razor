@@ -1,0 +1,81 @@
+﻿@page "/fetchdata"
+@inject HttpClient Http
+@inject IConfiguration Configuration
+
+@using System.Text.Json;
+
+<div class="text-center">
+    <h1 class="display-4">Giphy Search</h1>
+
+    <form method="get">       
+        <input type="button" value="Get trending gifs" @onclick="FetchTrendingGifs" />
+        <br />
+        <br />
+        <input type="text" name="searchTerm" @bind-value="@SearchTerm"  />
+        <input type="button" value="Search" @onclick="SearchGifs" />
+    </form>
+
+    @if (GifResults != null)
+    {
+        <h2>Results</h2>
+        <ul>
+            @foreach (var gif in GifResults)
+            {
+                <li><img src="@gif" /></li>
+            }
+
+        </ul>
+    }
+</div>
+
+@code {
+    public string SearchTerm { get; set; }
+
+   // private string ServiceUrl => Configuration["ServiceUrl"];
+
+    public List<string> GifResults { get; set; }
+
+    private WeatherForecast[]? forecasts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("sample-data/weather.json");
+    }
+
+    public class WeatherForecast
+    {
+        public DateTime Date { get; set; }
+
+        public int TemperatureC { get; set; }
+
+        public string? Summary { get; set; }
+
+        public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    }
+
+    public async Task FetchTrendingGifs()
+    {
+        Http.DefaultRequestHeaders.Add("Access-Control-Allow-Origin", "*");
+        var response = await Http.GetAsync("http://localhost:5107/Giphy/trending");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var data = JsonSerializer.Deserialize<List<string>>(responseContent);
+            GifResults = data;
+        }
+    }
+
+    public async Task SearchGifs()
+    {
+        Http.DefaultRequestHeaders.Add("Access-Control-Allow-Origin", "*");
+        var response = await Http.GetAsync("http://localhost:5107/Giphy/search/" + SearchTerm);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var responseContent = await response.Content.ReadAsStringAsync();
+            var data = JsonSerializer.Deserialize<List<string>>(responseContent);
+            GifResults = data;
+        }
+    }
+}
